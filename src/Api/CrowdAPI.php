@@ -133,7 +133,7 @@ class CrowdAPI {
             $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
             
             if ($response->getStatusCode() === 201) {
-                $data = $response->json();
+                $data = json_decode($response->getBody());
                 if ($credentials['username'] === $data->user->name) {
                     return $data->token;
                 }
@@ -199,7 +199,7 @@ class CrowdAPI {
         $apiEndpoint = '/1/session/'.$token;
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
-            $data = $response->json();
+            $data = json_decode($response->getBody());
             if ($data->user->name === $username && $token === $data->token) {
                 return $this->getUser($data->user->name);
             }
@@ -225,7 +225,7 @@ class CrowdAPI {
         ]);
         
         if ($response->getStatusCode() === 200) {
-            $data           = $response->json();
+            $data           = json_decode($response->getBody());
             $userAttributes = [];
             
             $count = count($data->attributes->attributes);
@@ -268,7 +268,7 @@ class CrowdAPI {
         ]);
         
         if ($response->getStatusCode() === 200) {
-            $data   = $response->json();
+            $data   = json_decode($response->getBody());
             $groups = [];
             $count  = count($data->groups);
             for ($i = 0; $i < $count; $i++) {
@@ -294,7 +294,7 @@ class CrowdAPI {
         $apiEndpoint = '/1/session/'.$token;
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
-            $data = $response->json();
+            $data = json_decode($response->getBody());
             
             return $data->token;
         }
@@ -322,7 +322,7 @@ class CrowdAPI {
         ];
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
         if ($response->getStatusCode() === 200) {
-            $data = $response->json();
+            $data = json_decode($response->getBody());
             
             return $data->token;
         }
