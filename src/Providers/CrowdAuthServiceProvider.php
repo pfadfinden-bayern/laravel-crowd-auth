@@ -19,8 +19,8 @@ class CrowdAuthServiceProvider extends ServiceProvider
             __DIR__ . '/../Database/Migrations/' => base_path('/database/migrations'),
         ], 'migrations');
     
-        \Auth::provider('crowd-auth', function ($app, array $config) {
-            return new CrowdAuthUserServiceProvider($config);
+        \Auth::provider('crowd-auth', function ($app) {
+            return new CrowdAuthUserServiceProvider($app['config']);
         });
         
         // When Laravel logs out, logout the Crowd token using Crowd API
