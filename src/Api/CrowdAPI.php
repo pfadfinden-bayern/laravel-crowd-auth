@@ -16,7 +16,7 @@ use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 use Http\Client\Common\Plugin\AuthenticationPlugin;
 use Http\Client\Common\Plugin\ContentLengthPlugin;
 use Http\Client\Common\Plugin\DecoderPlugin;
-use Http\Client\Common\Plugin\HeaderDefaultsPlugin;
+use Http\Client\Common\Plugin\HeaderSetPlugin;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\Plugin\RetryPlugin;
 use Http\Client\Common\PluginClient;
@@ -62,7 +62,7 @@ class CrowdAPI {
         $authentication = new BasicAuth($appName, $appPassword);
         
         $defaultUserAgent     = 'laravelcrowd-auth / v1.0 [matthewglinski@gmail.com]';
-        $headerDefaultsPlugin = new HeaderDefaultsPlugin([
+        $headerDefaultsPlugin = new HeaderSetPlugin([
             'Accept: application/json',
             'Content-Type: application/json',
             'User-Agent' => $defaultUserAgent,
