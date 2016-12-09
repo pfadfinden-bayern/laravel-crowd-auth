@@ -142,16 +142,19 @@ class CrowdAPI {
      * @param  array  $requestData
      *
      * @return ResponseInterface
+     * @throws \Exception
      */
-    private function runCrowdAPI($requestEndpoint, $requestType, $requestData)
+    private function runCrowdAPI($requestEndpoint, $requestType, array $requestData)
     {
         $resourcePath = $this->_endpointUrl . '/rest/usermanagement' . $requestEndpoint;
         if ($requestType === 'GET') {
             $resourcePath .= '?' . http_build_query($requestData);
-            $requestData = null;
+            $requestData = [];
         }
-        
-        $promise = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
+    
+        $request = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
+    
+        $promise = $this->_guzzleClient->sendAsyncRequest($request);
         
         /** @var ResponseInterface $response */
         $response = $promise->wait();
