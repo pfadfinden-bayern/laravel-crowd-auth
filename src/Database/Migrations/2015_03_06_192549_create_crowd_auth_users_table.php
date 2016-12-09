@@ -12,7 +12,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateCrowdGroupsTable extends Migration {
+class CreateCrowdUsersTable extends Migration {
 
     /**
      * Run the migrations.
@@ -21,15 +21,19 @@ class CreateCrowdGroupsTable extends Migration {
      */
     public function up()
     {
-        Schema::create('crowd_groups', function(Blueprint $table)
+        Schema::create('crowd_auth_users', function (Blueprint $table)
         {
             $table->increments('id');
-            $table->string('group_name');
+            $table->string('crowd_key')->unique();
+            $table->string('username');
+            $table->string('email');
+            $table->string('display_name');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->timestamps();
         });
     }
-
-
+    
     /**
      * Reverse the migrations.
      *
@@ -37,7 +41,6 @@ class CreateCrowdGroupsTable extends Migration {
      */
     public function down()
     {
-        Schema::drop('crowd_groups');
+        Schema::drop('crowd_auth_users');
     }
-
 }

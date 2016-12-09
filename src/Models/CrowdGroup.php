@@ -9,9 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace GLOKON\CrowdAuth\Models;
+namespace Crowd\Auth\Models;
 
-class CrowdGroup extends \Eloquent {
+use Illuminate\Database\Eloquent\Model;
+
+class CrowdGroup extends Model
+{
 
     /**
      * Whitelist
@@ -20,14 +23,14 @@ class CrowdGroup extends \Eloquent {
      *
      * @var array
      */
-    protected $fillable = array('group_name');
+    protected $fillable = array('name');
 
     /**
      * The database table used by the model.
      *
      * @var string
      */
-    protected $table = 'crowd_groups';
+    protected $table = 'crowd_auth_groups';
 
     /**
      * Get all users that use this group
@@ -35,6 +38,7 @@ class CrowdGroup extends \Eloquent {
      * @return CrowdUser
      */
     public function users() {
-        return $this->belongsToMany('GLOKON\CrowdAuth\Models\CrowdUser', 'crowdgroup_crowduser', 'crowd_group_id', 'crowd_user_id');
+        return $this->belongsToMany('Crowd\Auth\Models\CrowdUser', 'crowd_auth_group_auth_user', 'crowd_group_id',
+            'crowd_user_id')->withTimestamps();
     }
 }

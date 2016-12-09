@@ -12,7 +12,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateCrowdgroupCrowduserTable extends Migration {
+class CreateCrowdAuthGroupCrowdAuthUserTable extends Migration
+{
 
     /**
      * Run the migrations.
@@ -21,18 +22,18 @@ class CreateCrowdgroupCrowduserTable extends Migration {
      */
     public function up()
     {
-        Schema::create('crowdgroup_crowduser', function(Blueprint $table)
+        Schema::create('crowd_auth_group_auth_user', function (Blueprint $table)
         {
             $table->increments('id');
             $table->integer('crowd_group_id')->unsigned()->index();
             $table->integer('crowd_user_id')->unsigned()->index();
             $table->timestamps();
         });
-
-        Schema::table('crowdgroup_crowduser', function(Blueprint $table)
+    
+        Schema::table('crowd_auth_group_auth_user', function (Blueprint $table)
         {
-            $table->foreign('crowd_group_id')->references('id')->on('crowd_groups')->onDelete('cascade');
-            $table->foreign('crowd_user_id')->references('id')->on('crowd_users')->onDelete('cascade');
+            $table->foreign('crowd_group_id')->references('id')->on('crowd_auth_groups')->onDelete('cascade');
+            $table->foreign('crowd_user_id')->references('id')->on('crowd_auth_users')->onDelete('cascade');
         });
     }
 
@@ -44,7 +45,7 @@ class CreateCrowdgroupCrowduserTable extends Migration {
      */
     public function down()
     {
-        Schema::drop('crowdgroup_crowduser');
+        Schema::drop('crowd_auth_group_auth_user');
     }
 
 }

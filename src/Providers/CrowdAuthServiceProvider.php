@@ -1,0 +1,59 @@
+<?php namespace Crowd\Auth\Providers;
+
+use Brave\Core\Models\CoreAuthGroup;
+use Brave\Core\Models\CoreAuthPermission;
+use Brave\Core\Models\CoreAuthUser;
+use Illuminate\Auth\Guard;
+use Illuminate\Support\ServiceProvider;
+
+
+class CrowdAuthServiceProvider extends ServiceProvider
+{
+    
+    protected $defer = false;
+    
+    /**
+     * Bootstrap the application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        
+        $this->publishes([
+            __DIR__ . '/../Database/Migrations/' => base_path('/database/migrations'),
+        ], 'migrations');
+        
+        // Bind the CrowdAuth name to a singleton instance of the Crowd API Service
+        $this->app->singleton('CrowdApi', function () {
+            return new CrowdAPI();
+        });
+        
+        $this->app['auth']->extend('CrowdAuth', function ($app) {
+            $provider = new CrowdAuthUserServiceProvider($this->app['CrowdApi']);
+            
+            return new Guard($provider, $app['session.store']);
+        });
+        
+        // When Laravel logs out, logout the Crowd token using Crowd API
+        \Event::listen('auth.logout', function ($user) {
+            $this->app['CrowdApi']->ssoInvalidateToken($user->getRememberToken());
+        });
+    }
+    
+    /**
+     * Register the application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+    
+    public function provides()
+    {
+        return ['CrowdAuth'];
+    }
+    
+}

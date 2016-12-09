@@ -6,30 +6,42 @@
     ],
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/GLOKON/crowd-auth/issues",
-        "source": "https://github.com/GLOKON/crowd-auth"
+        "issues": "https://github.com/mglinski/laravel-crowd-auth/issues",
+        "source": "https://github.com/mglinski/laravel-crowd-auth"
     },
-    "homepage": "https://github.com/GLOKON/crowd-auth",
+    "homepage": "https://gitlab.com/mglinski/laravel-crowd-auth",
     "authors": [
         {
             "name": "Daniel McAssey",
             "email": "hello@glokon.me"
+        },
+        {
+            "name": "Matthew Glinski",
+            "email": "matt@mglinski.com"
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "illuminate/support": "4.2.*",
-        "illuminate/database": "*",
-        "illuminate/auth": "4.2.*"
+        "php": ">=5.6.9",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "illuminate/support": "5.3.*",
+        "illuminate/database": "5.3.*",
+        "illuminate/auth": "5.3.*",
+        "php-http/httplug": "^1.1",
+        "php-http/guzzle6-adapter": "^1.1",
+        "guzzlehttp/psr7": "^1.3",
+        "php-http/message-factory": "^1.0",
+        "php-http/discovery": "^1.1",
+        "php-http/cache-plugin": "^1.2"
     },
     "require-dev": {
-        "orchestra/testbench": "2.2.*",
+        "orchestra/testbench": "3.3.*",
         "mockery/mockery": "0.9.*",
         "phpunit/phpunit": "4.*"
     },
     "autoload": {
         "psr-0": {
-            "GLOKON\\CrowdAuth\\": "src/"
+            "Crowd\\Auth\\": "src/"
         }
     },
     "extra": {

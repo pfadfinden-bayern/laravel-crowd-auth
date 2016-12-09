@@ -43,11 +43,13 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
-    | Crowd Auth: Usable User Groups
+    | Crowd Auth: Usable User Groups [******* FEATURE-DISABLED *********]
     |--------------------------------------------------------------------------
     |
     | Here is where you define each of the groups that have access to your
     | application.
+    |
+    | EDIT: THIS DOES NOTHING FOR NOW
     */
 
     'app_groups' => array(
