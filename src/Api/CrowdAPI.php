@@ -226,6 +226,10 @@ class CrowdAPI {
         
         if ($response->getStatusCode() === 200) {
             $data           = json_decode($response->getBody());
+    
+            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
+                ['body' => (string)$response->getBody()]);
+            
             $userAttributes = [];
             
             $count = count($data->attributes->attributes);
@@ -269,6 +273,8 @@ class CrowdAPI {
         
         if ($response->getStatusCode() === 200) {
             $data   = json_decode($response->getBody());
+            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
+                ['body' => (string)$response->getBody()]);
             $groups = [];
             $count  = count($data->groups);
             for ($i = 0; $i < $count; $i++) {
@@ -295,6 +301,8 @@ class CrowdAPI {
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
             $data = json_decode($response->getBody());
+            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
+                ['body' => (string)$response->getBody()]);
             
             return $data->token;
         }
@@ -323,6 +331,8 @@ class CrowdAPI {
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
         if ($response->getStatusCode() === 200) {
             $data = json_decode($response->getBody());
+            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
+                ['body' => (string)$response->getBody()]);
             
             return $data->token;
         }
