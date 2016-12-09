@@ -170,6 +170,8 @@ class CrowdAPI {
         /** @var ResponseInterface $response */
         try {
             $response = $promise->wait();
+    
+            return $response;
         } catch (HttpException $exception) {
             logger()->error($exception->getMessage(), [
                 'request-method'  => $exception->getRequest()->getMethod(),
@@ -179,10 +181,8 @@ class CrowdAPI {
                 'response-reason' => $exception->getResponse()->getReasonPhrase(),
                 'response-body'   => $exception->getResponse()->getBody(),
             ]);
-            //throw $exception;
+            throw $exception;
         }
-        
-        return $response;
     }
     
     /**
