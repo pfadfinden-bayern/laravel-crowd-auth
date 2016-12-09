@@ -8,8 +8,6 @@ use Illuminate\Support\ServiceProvider;
 class CrowdAuthServiceProvider extends ServiceProvider
 {
     
-    protected $defer = false;
-    
     /**
      * Bootstrap the application services.
      *
@@ -21,9 +19,9 @@ class CrowdAuthServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../Database/Migrations/' => base_path('/database/migrations'),
         ], 'migrations');
-        
-        $this->app['auth']->extend('CrowdAuth', function ($app) {
-            $provider = new CrowdAuthUserServiceProvider($this->app['CrowdApi']);
+    
+        \Auth::provider('crowd-auth', function ($app, array $config) {
+            $provider = new CrowdAuthUserServiceProvider($app['CrowdApi']);
             
             return new Guard($provider, $app['session.store']);
         });
@@ -33,20 +31,4 @@ class CrowdAuthServiceProvider extends ServiceProvider
             $this->app['CrowdApi']->ssoInvalidateToken($user->getRememberToken());
         });
     }
-    
-    /**
-     * Register the application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
-    }
-    
-    public function provides()
-    {
-        return ['CrowdAuth'];
-    }
-    
 }
