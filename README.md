@@ -9,15 +9,13 @@ A simple way to implement Atlassian Crowd Authentication into your application.
 
 ### Laravel 5.3.x
 
-In the `require` key of `composer.json` file add the following
+Require the package by running a dcomposer require:
 
-    "mglinski/laravel-crowd-auth": "*"
+```bash
+composer require mglinski/laravel-crowd-auth
+```
 
-Run the Composer update comand
-
-    $ composer update
-
-In your `config/app.php` add `Crowd\Auth\CrowdAuthServiceProvider'` to the end of the `providers` array
+In your `config/app.php` add `Crowd\Auth\CrowdAuthApiServiceProvider::class` and `Crowd\Auth\CrowdAuthServiceProvider::class` to the end of the `providers` array
 
 ```php
 'providers' => [
