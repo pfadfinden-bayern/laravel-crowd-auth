@@ -15,8 +15,6 @@ class CrowdAuthServiceProvider extends ServiceProvider
      */
     public function boot(Dispatcher $events)
     {
-        $this->registerPolicies();
-        
         $this->publishes([
             __DIR__ . '/../Database/Migrations/' => base_path('/database/migrations'),
         ], 'migrations');
