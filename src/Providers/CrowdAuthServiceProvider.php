@@ -20,7 +20,7 @@ class CrowdAuthServiceProvider extends ServiceProvider
         ], 'migrations');
     
         \Auth::provider('crowd-auth', function ($app, array $config) {
-            return new CrowdAuthUserServiceProvider($app['CrowdApi']);
+            return new CrowdAuthUserServiceProvider($config);
         });
         
         // When Laravel logs out, logout the Crowd token using Crowd API
