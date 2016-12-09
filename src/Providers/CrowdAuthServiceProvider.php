@@ -24,11 +24,6 @@ class CrowdAuthServiceProvider extends ServiceProvider
             __DIR__ . '/../Database/Migrations/' => base_path('/database/migrations'),
         ], 'migrations');
         
-        // Bind the CrowdAuth name to a singleton instance of the Crowd API Service
-        $this->app->singleton('CrowdApi', function () {
-            return new CrowdAPI();
-        });
-        
         $this->app['auth']->extend('CrowdAuth', function ($app) {
             $provider = new CrowdAuthUserServiceProvider($this->app['CrowdApi']);
             
