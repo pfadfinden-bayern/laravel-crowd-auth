@@ -1,8 +1,5 @@
 <?php namespace Crowd\Auth\Providers;
 
-use Brave\Core\Models\CoreAuthGroup;
-use Brave\Core\Models\CoreAuthPermission;
-use Brave\Core\Models\CoreAuthUser;
 use Illuminate\Auth\Guard;
 use Illuminate\Support\ServiceProvider;
 

@@ -18,8 +18,8 @@ return array(
     | Please specify the URL to your crowd service for authentication, it must
     | NOT end in a forward slash and be a publicly accesible URL.
     */
-
-    'url' => 'http://crowd.example.com:8080/crowd',
+    
+    'url' => env('CROWD_AUTH_APP_URL', 'http://crowd.example.com:8080/crowd'),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,8 +28,8 @@ return array(
     | Here is where you specify your application name that you use for your
     | crowd application.
     */
-
-    'app_name' => 'crowd-app-name',
+    
+    'app_name' => env('CROWD_AUTH_APP_NAME', 'crowd-app-name'),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,8 +38,8 @@ return array(
     | Here is where you specify your password that you use for your crowd
     | application.
     */
-
-    'app_password' => 'crowd-app-password',
+    
+    'app_password' => env('CROWD_AUTH_APP_PASSWORD', 'crowd-app-password'),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ return array(
     |
     | EDIT: THIS DOES NOTHING FOR NOW
     */
-
+    
     'app_groups' => array(
 
         'app-administrators',
