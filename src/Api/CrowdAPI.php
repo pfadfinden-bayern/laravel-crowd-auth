@@ -218,7 +218,7 @@ class CrowdAPI {
      */
     public function getUser($username)
     {
-        $apiEndpoint = '/1/user';
+        $apiEndpoint = '/1/authentication';
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', [
             'username' => $username,
             'expand'   => 'attributes',
