@@ -1,6 +1,7 @@
 <?php namespace Crowd\Auth\Providers;
 
 use Illuminate\Auth\Guard;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
 
@@ -12,9 +13,9 @@ class CrowdAuthServiceProvider extends ServiceProvider
     /**
      * Bootstrap the application services.
      *
-     * @return void
+     * @param Dispatcher $events
      */
-    public function boot()
+    public function boot(Dispatcher $events)
     {
         
         $this->publishes([
@@ -28,7 +29,7 @@ class CrowdAuthServiceProvider extends ServiceProvider
         });
         
         // When Laravel logs out, logout the Crowd token using Crowd API
-        \Event::listen('auth.logout', function ($user) {
+        $events->listen('auth.logout', function ($user) {
             $this->app['CrowdApi']->ssoInvalidateToken($user->getRememberToken());
         });
     }
