@@ -20,6 +20,7 @@ use Http\Client\Common\Plugin\HeaderDefaultsPlugin;
 use Http\Client\Common\Plugin\RedirectPlugin;
 use Http\Client\Common\Plugin\RetryPlugin;
 use Http\Client\Common\PluginClient;
+use Http\Client\Exception\HttpException;
 use Http\Discovery\MessageFactoryDiscovery;
 use Http\Message\Authentication\BasicAuth;
 use Psr\Http\Message\ResponseInterface;
@@ -159,7 +160,12 @@ class CrowdAPI {
         $promise = $this->_guzzleClient->sendAsyncRequest($request);
         
         /** @var ResponseInterface $response */
-        $response = $promise->wait();
+        try {
+            $response = $promise->wait();
+        } catch (HttpException $exception) {
+            logger()->error($exception->getMessage(), [$exception->getRequest(), $exception->getResponse()]);
+            throw $exception;
+        }
         
         return $response;
     }
