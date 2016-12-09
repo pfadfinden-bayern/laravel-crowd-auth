@@ -15,7 +15,7 @@ class CrowdApiServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../Config/crowd_auth.php' => config_path('crowd_auth.php'),
-        ]);
+        ], 'config');
     }
     
     /**
