@@ -79,9 +79,9 @@ class CrowdAPI {
         // Instance Default Plugins
         $authenticationPlugin = new AuthenticationPlugin($authentication);
         $decoderPlugin        = new DecoderPlugin();
-        $retryPlugin          = new RetryPlugin();
-        $redirectPlugin       = new RedirectPlugin();
-        $contentLengthPlugin  = new ContentLengthPlugin();
+        $retryPlugin         = new RetryPlugin();
+        $redirectPlugin      = new RedirectPlugin();
+        $contentLengthPlugin = new ContentLengthPlugin();
         
         // Combine Plugins with Client
         $pluginClient = new PluginClient(
@@ -95,15 +95,14 @@ class CrowdAPI {
                 $decoderPlugin,
             ]
         );
-        
+    
+        $this->_endpointUrl = $endpointUrl;
+    
         // Save the HTTP Client instance
-        $this->guzzleClient = $pluginClient;
-        
+        $this->_guzzleClient = $pluginClient;
+    
         // Setup the Request Instance Factory
         $this->requestFactory = MessageFactoryDiscovery::find();
-        
-        $this->_endpointUrl  = $endpointUrl;
-        $this->_guzzleClient = $guzzleClient;
     }
     
     /**
