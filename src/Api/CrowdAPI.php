@@ -99,43 +99,6 @@ class CrowdAPI {
     }
     
     /**
-     * Authenticates user and gets SSO token
-     *
-     * @param  array  $credentials
-     * @param  string $user_ip
-     *
-     * @return null|string
-     */
-    public function ssoAuthUser($credentials, $user_ip)
-    {
-        if (is_array($credentials) && isset($credentials['username']) && isset($credentials['password'])) {
-            $apiEndpoint = '/1/session';
-            $apiData = [
-                'username'           => $credentials['username'],
-                'password'           => $credentials['password'],
-                'validation-factors' => [
-                    'validationFactors' => [
-                        [
-                            'name'  => 'remote_address',
-                            'value' => $user_ip,
-                        ],
-                    ],
-                ],
-            ];
-            $response = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
-            
-            if ($response->getStatusCode() === 201) {
-                $data = $response->json();
-                if ($credentials['username'] === $data->user->name) {
-                    return $data->token;
-                }
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
      * Runs the data against the Crowd RESTful API
      *
      * @param  string $requestEndpoint
@@ -163,11 +126,99 @@ class CrowdAPI {
         try {
             $response = $promise->wait();
         } catch (HttpException $exception) {
-            logger()->error($exception->getMessage(), [$exception->getRequest(), $exception->getResponse()]);
-            throw $exception;
+            logger()->error($exception->getMessage(), [
+                'request-method'  => $exception->getRequest()->getMethod(),
+                'request-uri'     => $exception->getRequest()->getUri(),
+                'request-headers' => $exception->getRequest()->getHeaders(),
+                'response-status' => $exception->getResponse()->getStatusCode(),
+                'response-reason' => $exception->getResponse()->getReasonPhrase(),
+                'response-body'   => $exception->getResponse()->getBody(),
+            ]);
+            //throw $exception;
         }
         
         return $response;
+    }
+    
+    /**
+     * Runs the data against the Crowd RESTful API
+     *
+     * @param  string $requestEndpoint
+     * @param  string $requestType
+     * @param  array  $requestData
+     *
+     * @return ResponseInterface
+     * @throws \Exception
+     */
+    private function runCrowdAPI($requestEndpoint, $requestType, $requestData)
+    {
+        $resourcePath = $this->_endpointUrl . '/rest/usermanagement' . $requestEndpoint;
+        if ($requestType === 'GET') {
+            $resourcePath .= '?' . http_build_query($requestData);
+            $requestData = '';
+        } else {
+            if (is_array($requestData)) {
+                $requestData = http_build_query($requestData);
+            }
+        }
+        
+        $request = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
+        
+        $promise = $this->_guzzleClient->sendAsyncRequest($request);
+        
+        /** @var ResponseInterface $response */
+        try {
+            $response = $promise->wait();
+        } catch (HttpException $exception) {
+            logger()->error($exception->getMessage(), [
+                'request-method'  => $exception->getRequest()->getMethod(),
+                'request-uri'     => $exception->getRequest()->getUri(),
+                'request-headers' => $exception->getRequest()->getHeaders(),
+                'response-status' => $exception->getResponse()->getStatusCode(),
+                'response-reason' => $exception->getResponse()->getReasonPhrase(),
+                'response-body'   => $exception->getResponse()->getBody(),
+            ]);
+            //throw $exception;
+        }
+        
+        return $response;
+    }
+    
+    /**
+     * Authenticates user and gets SSO token
+     *
+     * @param  array  $credentials
+     * @param  string $user_ip
+     *
+     * @return null|string
+     */
+    public function ssoAuthUser($credentials, $user_ip)
+    {
+        if (is_array($credentials) && isset($credentials['username']) && isset($credentials['password'])) {
+            $apiEndpoint = '/1/session';
+            $apiData     = [
+                'username'           => $credentials['username'],
+                'password'           => $credentials['password'],
+                'validation-factors' => [
+                    'validationFactors' => [
+                        [
+                            'name'  => 'remote_address',
+                            'value' => $user_ip,
+                        ],
+                    ],
+                ],
+            ];
+            $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
+            
+            if ($response->getStatusCode() === 201) {
+                $data = $response->json();
+                if ($credentials['username'] === $data->user->name) {
+                    return $data->token;
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
