@@ -75,8 +75,8 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function retrieveById($identifier)
     {
         if ($identifier !== null) {
-            if (resolve('crowd-auth')->doesUserExist($identifier)) {
-                $userData = resolve('crowd-auth')->getUser($identifier);
+            if (resolve('crowd-api')->doesUserExist($identifier)) {
+                $userData = resolve('crowd-api')->getUser($identifier);
                 if (!empty($userData)) {
                     return new GenericUser([
                         'id'          => $userData['user-name'],
@@ -105,10 +105,10 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
-        if (resolve('crowd-auth')->canUserLogin($credentials['username'])) {
-            $token = resolve('crowd-auth')->ssoAuthUser($credentials,
+        if (resolve('crowd-api')->canUserLogin($credentials['username'])) {
+            $token = resolve('crowd-api')->ssoAuthUser($credentials,
                 filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
-            if ($token !== null && resolve('crowd-auth')->ssoGetUser($credentials['username'], $token) !== null) {
+            if ($token !== null && resolve('crowd-api')->ssoGetUser($credentials['username'], $token) !== null) {
                 
                 // Check if user exists in DB, if not add it.
                 $stored_crowd_user = CrowdUser::where('crowd_key', '=', $user->key)->first();
@@ -164,7 +164,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        $userData = resolve('crowd-auth')->ssoGetUser($identifier, $token);
+        $userData = resolve('crowd-api')->ssoGetUser($identifier, $token);
         if ($userData !== null) {
             return $this->retrieveById($userData['user-name']);
         }
@@ -183,7 +183,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function updateRememberToken(Authenticatable $user, $token)
     {
         if ($user !== null) {
-            $user->setRememberToken(resolve('crowd-auth')->ssoUpdateToken($token,
+            $user->setRememberToken(resolve('crowd-api')->ssoUpdateToken($token,
                 filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)));
         }
         
