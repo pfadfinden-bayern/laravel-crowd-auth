@@ -1,5 +1,5 @@
 {
-    "name": "glokon/crowd-auth",
+  "name": "mglinski/laravel-crowd-auth",
     "description": "A simple way to implement Atlassian Crowd Authentication into your application.",
     "keywords": [
         "auth", "crowd", "authentication", "atlassian", "laravel"
@@ -40,13 +40,8 @@
         "phpunit/phpunit": "4.*"
     },
     "autoload": {
-        "psr-0": {
+      "psr-4": {
             "Crowd\\Auth\\": "src/"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.9-dev"
         }
     },
     "minimum-stability": "stable"
