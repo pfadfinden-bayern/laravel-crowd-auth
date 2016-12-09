@@ -99,6 +99,44 @@ class CrowdAPI {
     }
     
     /**
+     * Authenticates user and gets SSO token
+     *
+     * @param  array  $credentials
+     * @param  string $user_ip
+     *
+     * @return null|string
+     * @throws \Exception
+     */
+    public function ssoAuthUser($credentials, $user_ip)
+    {
+        if (is_array($credentials) && isset($credentials['username']) && isset($credentials['password'])) {
+            $apiEndpoint = '/1/session';
+            $apiData     = [
+                'username'           => $credentials['username'],
+                'password'           => $credentials['password'],
+                'validation-factors' => [
+                    'validationFactors' => [
+                        [
+                            'name'  => 'remote_address',
+                            'value' => $user_ip,
+                        ],
+                    ],
+                ],
+            ];
+            $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
+            
+            if ($response->getStatusCode() === 201) {
+                $data = $response->json();
+                if ($credentials['username'] === $data->user->name) {
+                    return $data->token;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
      * Runs the data against the Crowd RESTful API
      *
      * @param  string $requestEndpoint
@@ -141,92 +179,13 @@ class CrowdAPI {
     }
     
     /**
-     * Runs the data against the Crowd RESTful API
-     *
-     * @param  string $requestEndpoint
-     * @param  string $requestType
-     * @param  array  $requestData
-     *
-     * @return ResponseInterface
-     * @throws \Exception
-     */
-    private function runCrowdAPI($requestEndpoint, $requestType, $requestData)
-    {
-        $resourcePath = $this->_endpointUrl . '/rest/usermanagement' . $requestEndpoint;
-        if ($requestType === 'GET') {
-            $resourcePath .= '?' . http_build_query($requestData);
-            $requestData = '';
-        } else {
-            if (is_array($requestData)) {
-                $requestData = http_build_query($requestData);
-            }
-        }
-        
-        $request = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
-        
-        $promise = $this->_guzzleClient->sendAsyncRequest($request);
-        
-        /** @var ResponseInterface $response */
-        try {
-            $response = $promise->wait();
-        } catch (HttpException $exception) {
-            logger()->error($exception->getMessage(), [
-                'request-method'  => $exception->getRequest()->getMethod(),
-                'request-uri'     => $exception->getRequest()->getUri(),
-                'request-headers' => $exception->getRequest()->getHeaders(),
-                'response-status' => $exception->getResponse()->getStatusCode(),
-                'response-reason' => $exception->getResponse()->getReasonPhrase(),
-                'response-body'   => $exception->getResponse()->getBody(),
-            ]);
-            //throw $exception;
-        }
-        
-        return $response;
-    }
-    
-    /**
-     * Authenticates user and gets SSO token
-     *
-     * @param  array  $credentials
-     * @param  string $user_ip
-     *
-     * @return null|string
-     */
-    public function ssoAuthUser($credentials, $user_ip)
-    {
-        if (is_array($credentials) && isset($credentials['username']) && isset($credentials['password'])) {
-            $apiEndpoint = '/1/session';
-            $apiData     = [
-                'username'           => $credentials['username'],
-                'password'           => $credentials['password'],
-                'validation-factors' => [
-                    'validationFactors' => [
-                        [
-                            'name'  => 'remote_address',
-                            'value' => $user_ip,
-                        ],
-                    ],
-                ],
-            ];
-            $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
-            
-            if ($response->getStatusCode() === 201) {
-                $data = $response->json();
-                if ($credentials['username'] === $data->user->name) {
-                    return $data->token;
-                }
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
      * Retrieves user data from SSO token
      *
      * @param  string $username
      * @param  string $token
+     *
      * @return array|null
+     * @throws \Exception
      */
     public function ssoGetUser($username, $token)
     {
@@ -248,6 +207,7 @@ class CrowdAPI {
      * @param  string $username
      *
      * @return array|null
+     * @throws \Exception
      */
     public function getUser($username)
     {
@@ -291,6 +251,7 @@ class CrowdAPI {
      * @param  string $username
      *
      * @return array|null
+     * @throws \Exception
      */
     public function getUserGroups($username)
     {
@@ -317,7 +278,9 @@ class CrowdAPI {
      * Retrieves the token if matched with sent token
      *
      * @param  string $token
-     * @return string|null
+     *
+     * @return null|string
+     * @throws \Exception
      */
     public function ssoGetToken($token)
     {
@@ -339,6 +302,7 @@ class CrowdAPI {
      * @param         $user_ip
      *
      * @return null|string
+     * @throws \Exception
      */
     public function ssoUpdateToken($token, $user_ip)
     {
@@ -363,7 +327,9 @@ class CrowdAPI {
      * Invalidates the token when logged out
      *
      * @param  string $token
+     *
      * @return bool
+     * @throws \Exception
      */
     public function ssoInvalidateToken($token)
     {
@@ -377,7 +343,9 @@ class CrowdAPI {
      * Checks to see if user exists by username
      *
      * @param  string $username
+     *
      * @return bool
+     * @throws \Exception
      */
     public function doesUserExist($username)
     {
