@@ -65,13 +65,13 @@ class CrowdAPI {
         $guzzleClient = new GuzzleAdapter($guzzle);
         
         $authentication = new BasicAuth($appName, $appPassword);
-        
-        $defaultUserAgent     = 'laravelcrowd-auth / v1.0 [matthewglinski@gmail.com]';
+    
+        $defaultUserAgent = 'laravel-crowd-auth / v1.0 [matthewglinski@gmail.com]';
     
         $this->_headers = [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'User-Agent' => $defaultUserAgent,
+            'Accept'       => 'application/json',
+            'Content-Type' => 'application/json',
+            'User-Agent'   => $defaultUserAgent,
         ];
     
         $headerDefaultsPlugin = new HeaderSetPlugin($this->_headers);
@@ -133,7 +133,7 @@ class CrowdAPI {
             $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
             
             if ($response->getStatusCode() === 201) {
-                $data = json_decode($response->getBody());
+                $data = json_decode((string)$response->getBody());
                 if ($credentials['username'] === $data->user->name) {
                     return $data->token;
                 }
@@ -171,15 +171,30 @@ class CrowdAPI {
         try {
             $response = $promise->wait();
     
+            logger()->debug('CrowdAuth Request Successful', [
+                'request-method'  => $request->getMethod(),
+                'request-uri'     => (string)$request->getUri(),
+                'request-headers' => $request->getHeaders(),
+                'request-body'    => (string)$request->getBody(),
+        
+                'response-status'  => $response->getStatusCode(),
+                'response-reason'  => $response->getReasonPhrase(),
+                'response-headers' => $response->getHeaders(),
+                //'response-body'   => (string)$response->getBody(),
+            ]);
+    
             return $response;
         } catch (HttpException $exception) {
             logger()->error($exception->getMessage(), [
-                'request-method'  => $exception->getRequest()->getMethod(),
-                'request-uri'     => $exception->getRequest()->getUri(),
-                'request-headers' => $exception->getRequest()->getHeaders(),
+                'request-method'   => $exception->getRequest()->getMethod(),
+                'request-uri'      => (string)$exception->getRequest()->getUri(),
+                'request-headers'  => $exception->getRequest()->getHeaders(),
+                'request-body'     => (string)$exception->getRequest()->getBody(),
+    
                 'response-status' => $exception->getResponse()->getStatusCode(),
                 'response-reason' => $exception->getResponse()->getReasonPhrase(),
-                'response-body'   => $exception->getResponse()->getBody(),
+                'response-headers' => $response->getHeaders(),
+                'response-body'    => (string)$exception->getResponse()->getBody(),
             ]);
             throw $exception;
         }
@@ -199,7 +214,7 @@ class CrowdAPI {
         $apiEndpoint = '/1/session/'.$token;
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
-            $data = json_decode($response->getBody());
+            $data = json_decode((string)$response->getBody());
             if ($data->user->name === $username && $token === $data->token) {
                 return $this->getUser($data->user->name);
             }
@@ -218,36 +233,26 @@ class CrowdAPI {
      */
     public function getUser($username)
     {
-        $apiEndpoint = '/1/authentication';
+        $apiEndpoint = '/1/user';
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', [
             'username' => $username,
             'expand'   => 'attributes',
         ]);
         
         if ($response->getStatusCode() === 200) {
-            $data           = json_decode($response->getBody());
+            $data = json_decode((string)$response->getBody());
     
-            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
-                ['body' => (string)$response->getBody()]);
-            
-            $userAttributes = [];
-            
-            $count = count($data->attributes->attributes);
-            
-            for ($i = 0; $i < $count; $i++) {
-                $currentAttribute                          = $data->attributes->attributes[$i];
-                $userAttributes[$currentAttribute['name']] = $currentAttribute['values'][0];
-            }
-            
+            logger()->debug('lol', ['value' => var_export($data, true), 'raw' => (string)$response->getBody()]);
+
             $userData = [
-                'key'          => $response->key,
-                'user-name'    => $response->name,
-                'first-name'   => $response->{'first-name'},
-                'last-name'    => $response->{'last-name'},
-                'display-name' => $response->{'display-name'},
-                'email'        => $response->email,
-                'attributes'   => $userAttributes,
-                'groups'       => $this->getUserGroups($response->name),
+                'key'          => $data->key,
+                'user-name'    => $data->name,
+                'first-name'   => $data->{'first-name'},
+                'last-name'    => $data->{'last-name'},
+                'display-name' => $data->{'display-name'},
+                'email'        => $data->email,
+                'attributes'   => [],
+                'groups'       => $this->getUserGroups($data->name),
             ];
             
             return $userData;
@@ -272,9 +277,7 @@ class CrowdAPI {
         ]);
         
         if ($response->getStatusCode() === 200) {
-            $data   = json_decode($response->getBody());
-            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
-                ['body' => (string)$response->getBody()]);
+            $data   = json_decode((string)$response->getBody());
             $groups = [];
             $count  = count($data->groups);
             for ($i = 0; $i < $count; $i++) {
@@ -300,9 +303,7 @@ class CrowdAPI {
         $apiEndpoint = '/1/session/'.$token;
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
-            $data = json_decode($response->getBody());
-            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
-                ['body' => (string)$response->getBody()]);
+            $data = json_decode((string)$response->getBody());
             
             return $data->token;
         }
@@ -330,9 +331,7 @@ class CrowdAPI {
         ];
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
         if ($response->getStatusCode() === 200) {
-            $data = json_decode($response->getBody());
-            logger()->debug(__CLASS__ . '->' . __FUNCTION__ . '() Response Successful',
-                ['body' => (string)$response->getBody()]);
+            $data = json_decode((string)$response->getBody());
             
             return $data->token;
         }
