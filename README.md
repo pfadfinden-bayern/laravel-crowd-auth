@@ -29,6 +29,7 @@ In your `config/app.php` add `Crowd\Auth\CrowdAuthApiServiceProvider::class` and
 Now generate the Crowd Auth migrations (make sure you have your database configuration set up):
 
     $ php artisan vendor:publish --tag=migrations
+    $ php artisan migrate
 
 This will setup three tables - `crowd_auth_users`, `crowd_auth_users` and `crowd_auth_group_auth_user`.
 
