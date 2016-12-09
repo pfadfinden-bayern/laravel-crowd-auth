@@ -144,12 +144,14 @@ class CrowdAPI {
      * @return ResponseInterface
      * @throws \Exception
      */
-    private function runCrowdAPI($requestEndpoint, $requestType, array $requestData)
+    private function runCrowdAPI($requestEndpoint, $requestType, $requestData)
     {
         $resourcePath = $this->_endpointUrl . '/rest/usermanagement' . $requestEndpoint;
         if ($requestType === 'GET') {
             $resourcePath .= '?' . http_build_query($requestData);
-            $requestData = [];
+            $requestData = '';
+        } else if (is_array($requestData)) {
+            $requestData = http_build_query($requestData);
         }
     
         $request = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
