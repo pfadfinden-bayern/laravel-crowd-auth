@@ -33,6 +33,10 @@ use RuntimeException;
  */
 class CrowdAPI {
     
+    /**
+     * @var array
+     */
+    protected $_headers;
     
     /**
      * @var string
@@ -55,18 +59,22 @@ class CrowdAPI {
      */
     public function __construct($endpointUrl, $appName, $appPassword)
     {
-        
+    
+    
         $guzzle       = new GuzzleClient();
         $guzzleClient = new GuzzleAdapter($guzzle);
         
         $authentication = new BasicAuth($appName, $appPassword);
         
         $defaultUserAgent     = 'laravelcrowd-auth / v1.0 [matthewglinski@gmail.com]';
-        $headerDefaultsPlugin = new HeaderSetPlugin([
+    
+        $this->_headers = [
             'Accept: application/json',
             'Content-Type: application/json',
             'User-Agent' => $defaultUserAgent,
-        ]);
+        ];
+    
+        $headerDefaultsPlugin = new HeaderSetPlugin($this->_headers);
         
         // Instance Default Plugins
         $authenticationPlugin = new AuthenticationPlugin($authentication);
@@ -156,8 +164,8 @@ class CrowdAPI {
             $requestData = http_build_query($requestData);
         }
     
-        $request = $this->requestFactory->createRequest($requestType, $resourcePath, [], $requestData);
-    
+        $request = $this->requestFactory->createRequest($requestType, $resourcePath, $this->_headers, $requestData);
+        
         $promise = $this->_guzzleClient->sendAsyncRequest($request);
         
         /** @var ResponseInterface $response */
