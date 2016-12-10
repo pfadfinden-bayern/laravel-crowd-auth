@@ -11,14 +11,10 @@
 
 namespace Crowd\Auth\Models;
 
-use Illuminate\Auth\UserTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class CrowdUser extends Authenticatable
 {
-    
-    use UserTrait;
-    
     /**
      * Whitelist
      *
