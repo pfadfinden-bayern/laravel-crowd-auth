@@ -31,6 +31,7 @@ class CreateCrowdAuthUsersTable extends Migration
             $table->string('display_name')->default('');
             $table->string('first_name')->default('');
             $table->string('last_name')->default('');
+            $table->rememberToken();
             $table->timestamps();
         });
     }
