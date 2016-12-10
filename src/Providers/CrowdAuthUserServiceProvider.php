@@ -133,7 +133,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
             foreach ($user->user_groups as $group_name) {
     
                 // Check if user_group already exists in the DB, if not add it.
-                $crowdUserGroup = CrowdGroup::firstOrCreate([
+                $crowdUserGroup = CrowdGroup::firstOrNew([
                     'name' => $group_name,
                 ]);
                 
