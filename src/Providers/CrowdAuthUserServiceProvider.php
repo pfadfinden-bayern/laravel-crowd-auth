@@ -62,13 +62,18 @@ class CrowdAuthUserServiceProvider implements UserProvider
     {
         if ($identifier !== null) {
             if (resolve('crowd-api')->doesUserExist($identifier)) {
+    
+                $savedUser = CrowdUser::where('username', '=', $identifier)->first();
+                if ($savedUser !== null) {
+                    return $savedUser;
+                }
+                
                 $userData = resolve('crowd-api')->getUser($identifier);
                 if (!empty($userData)) {
                     return new GenericUser([
                         'id'           => $userData['user-name'],
                         'username'     => $userData['user-name'],
                         'key'          => $userData['key'],
-                        'token'        => $userData['token'],
                         'display_name' => $userData['display-name'],
                         'first_name'   => $userData['first-name'],
                         'last_name'    => $userData['last-name'],
@@ -104,7 +109,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                         'crowd_key'    => $user->key,
                         'username'     => $user->username,
                         'email'        => $user->email,
-                        'email'        => $user->token,
+                        'token'        => $token,
                         'display_name' => $user->display_name,
                         'first_name'   => $user->first_name,
                         'last_name'    => $user->last_name,
