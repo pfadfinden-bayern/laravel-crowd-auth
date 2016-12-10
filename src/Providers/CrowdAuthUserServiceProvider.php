@@ -65,14 +65,14 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 $userData = resolve('crowd-api')->getUser($identifier);
                 if (!empty($userData)) {
                     return new GenericUser([
-                        'id'          => $userData['user-name'],
-                        'username'    => $userData['user-name'],
-                        'key'         => $userData['key'],
-                        'displayName' => $userData['display-name'],
-                        'firstName'   => $userData['first-name'],
-                        'lastName'    => $userData['last-name'],
-                        'email'       => $userData['email'],
-                        'usergroups'  => $userData['groups'],
+                        'id'           => $userData['user-name'],
+                        'username'     => $userData['user-name'],
+                        'key'          => $userData['key'],
+                        'display_name' => $userData['display-name'],
+                        'first_name'   => $userData['first-name'],
+                        'last_name'    => $userData['last-name'],
+                        'email'        => $userData['email'],
+                        'user_groups'  => $userData['groups'],
                     ]);
                 }
             }
@@ -103,9 +103,9 @@ class CrowdAuthUserServiceProvider implements UserProvider
                         'crowd_key'    => $user->key,
                         'username'     => $user->username,
                         'email'        => $user->email,
-                        'display_name' => $user->displayName,
-                        'first_name'   => $user->firstName,
-                        'last_name'    => $user->lastName,
+                        'display_name' => $user->display_name,
+                        'first_name'   => $user->first_name,
+                        'last_name'    => $user->last_name,
                     ));
                 }
                 
@@ -113,7 +113,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 $stored_crowd_user->groups()->detach();
                 
                 // Save new groups breh
-                foreach ($user->usergroups as $group_name) {
+                foreach ($user->user_groups as $group_name) {
     
                     // Check if usergroup already exists in the DB, if not add it.
                     $crowdUserGroup = CrowdGroup::where('group_name', '=', $group_name)->first();

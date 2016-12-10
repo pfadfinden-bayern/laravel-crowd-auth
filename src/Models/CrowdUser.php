@@ -24,7 +24,6 @@ class CrowdUser extends Authenticatable
      */
     protected $fillable = ['crowd_key', 'username', 'email', 'display_name', 'first_name', 'last_name', 'remember_token'];
     
-    
     /**
      * The attributes that should be hidden for arrays.
      *
