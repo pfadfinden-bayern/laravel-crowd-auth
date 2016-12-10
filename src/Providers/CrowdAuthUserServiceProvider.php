@@ -62,11 +62,6 @@ class CrowdAuthUserServiceProvider implements UserProvider
     {
         if ($identifier !== null) {
             if (resolve('crowd-api')->doesUserExist($identifier)) {
-    
-                $savedUser = CrowdUser::where('username', '=', $identifier)->first();
-                if ($savedUser !== null) {
-                    return $savedUser;
-                }
                 
                 $userData = resolve('crowd-api')->getUser($identifier);
                 if (!empty($userData)) {
