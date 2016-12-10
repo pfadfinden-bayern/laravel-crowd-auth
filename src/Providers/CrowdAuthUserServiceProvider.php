@@ -68,6 +68,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                         'id'           => $userData['user-name'],
                         'username'     => $userData['user-name'],
                         'key'          => $userData['key'],
+                        'token'        => $userData['token'],
                         'display_name' => $userData['display-name'],
                         'first_name'   => $userData['first-name'],
                         'last_name'    => $userData['last-name'],
@@ -103,6 +104,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                         'crowd_key'    => $user->key,
                         'username'     => $user->username,
                         'email'        => $user->email,
+                        'email'        => $user->token,
                         'display_name' => $user->display_name,
                         'first_name'   => $user->first_name,
                         'last_name'    => $user->last_name,
@@ -130,7 +132,6 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 }
                 
                 $stored_crowd_user->save();
-                $user->setRememberToken($token);
                 
                 return true;
             }
@@ -149,9 +150,9 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        $userData = resolve('crowd-api')->ssoGetUser($identifier, $token);
+        $userData = CrowdUser::where('name', '=', $identifier)->where('remember_token', '=', $token)->first();
         if ($userData !== null) {
-            return $this->retrieveById($userData['user-name']);
+            return $this->retrieveById($userData['username']);
         }
         
         return null;
@@ -168,8 +169,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function updateRememberToken(Authenticatable $user, $token)
     {
         if ($user !== null) {
-            $user->setRememberToken(resolve('crowd-api')->ssoUpdateToken($token,
-                filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)));
+            $user->setRememberToken($token);
         }
         
         return null;
