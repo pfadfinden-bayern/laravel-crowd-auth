@@ -159,7 +159,7 @@ class CrowdAPI {
         if ($requestType === 'GET') {
             $resourcePath .= '?' . http_build_query($requestData);
             $requestData = '';
-        } else if (is_array($requestData)) {
+        } else if (is_array($requestData) || is_object($requestData)) {
             $requestData = json_encode($requestData);
         }
     
