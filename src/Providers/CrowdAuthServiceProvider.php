@@ -25,7 +25,7 @@ class CrowdAuthServiceProvider extends ServiceProvider
         
         // When Laravel logs out, logout the Crowd token using Crowd API
         $events->listen('auth.logout', function ($user) {
-            $this->app['CrowdApi']->ssoInvalidateToken($user->getRememberToken());
+            $this->app['crowd-api']->ssoInvalidateToken($user->token);
         });
     }
 }
