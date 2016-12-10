@@ -331,9 +331,11 @@ class CrowdAPI {
     {
         $apiEndpoint = '/1/session/'.$token;
         $apiData = (object)[
-            'validationFactors' => (object)[
-                'name'  => 'remote_address',
-                'value' => $user_ip,
+            'validationFactors' => [
+                (object)[
+                    'name'  => 'remote_address',
+                    'value' => $user_ip,
+                ],
             ],
         ];
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
