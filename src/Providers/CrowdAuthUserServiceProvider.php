@@ -113,13 +113,13 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 $stored_crowd_user->groups()->detach();
                 
                 // Save new groups breh
-                foreach ($user->usergroups as $usergroup) {
+                foreach ($user->usergroups as $group_name) {
     
                     // Check if usergroup already exists in the DB, if not add it.
-                    $crowdUserGroup = CrowdGroup::where('group_name', '=', $usergroup)->first();
+                    $crowdUserGroup = CrowdGroup::where('group_name', '=', $group_name)->first();
                     if ($crowdUserGroup === null) {
                         $crowdUserGroup = CrowdGroup::create(array(
-                            'group_name' => $usergroup,
+                            'group_name' => $group_name,
                         ));
                     }
                     
