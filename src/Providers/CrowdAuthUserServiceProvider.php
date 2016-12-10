@@ -93,48 +93,62 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         if (resolve('crowd-api')->canUserLogin($credentials['username'])) {
-            $token = resolve('crowd-api')->ssoAuthUser($credentials,
-                filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
-            if ($token !== null && resolve('crowd-api')->ssoGetUser($credentials['username'], $token) !== null) {
-                
-                // Check if user exists in DB, if not add it.
-                $stored_crowd_user = CrowdUser::where('crowd_key', '=', $user->key)->first();
-                if ($stored_crowd_user === null) {
-                    $stored_crowd_user = CrowdUser::create(array(
-                        'crowd_key'    => $user->key,
-                        'username'     => $user->username,
-                        'email'        => $user->email,
-                        'token'        => $token,
-                        'display_name' => $user->display_name,
-                        'first_name'   => $user->first_name,
-                        'last_name'    => $user->last_name,
+    
+            try {
+                // Attempt the sso checks
+                $ip_address = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        
+                $token = resolve('crowd-api')->ssoAuthUser($credentials, $ip_address);
+                if ($token === null) {
+                    return false;
+                }
+        
+                $sso_user = resolve('crowd-api')->ssoGetUser($credentials['username'], $token);
+                if ($sso_user === null) {
+                    return false;
+                }
+        
+            } catch (\Exception $exception) {
+                return false;
+            }
+    
+            // Check if user exists in DB, if not add it.
+            $stored_crowd_user = CrowdUser::where('crowd_key', '=', $user->key)->first();
+            if ($stored_crowd_user === null) {
+                $stored_crowd_user = CrowdUser::create(array(
+                    'crowd_key'    => $user->key,
+                    'username'     => $user->username,
+                    'email'        => $user->email,
+                    'token'        => $token,
+                    'display_name' => $user->display_name,
+                    'first_name'   => $user->first_name,
+                    'last_name'    => $user->last_name,
+                ));
+            }
+    
+            // Detach all old groups from user and re-attach current ones.
+            $stored_crowd_user->groups()->detach();
+    
+            // Save new groups breh
+            foreach ($user->user_groups as $group_name) {
+        
+                // Check if usergroup already exists in the DB, if not add it.
+                $crowdUserGroup = CrowdGroup::where('group_name', '=', $group_name)->first();
+                if ($crowdUserGroup === null) {
+                    $crowdUserGroup = CrowdGroup::create(array(
+                        'group_name' => $group_name,
                     ));
                 }
-                
-                // Detach all old groups from user and re-attach current ones.
-                $stored_crowd_user->groups()->detach();
-                
-                // Save new groups breh
-                foreach ($user->user_groups as $group_name) {
-    
-                    // Check if usergroup already exists in the DB, if not add it.
-                    $crowdUserGroup = CrowdGroup::where('group_name', '=', $group_name)->first();
-                    if ($crowdUserGroup === null) {
-                        $crowdUserGroup = CrowdGroup::create(array(
-                            'group_name' => $group_name,
-                        ));
-                    }
-                    
-                    // Check if user has a group retrieved from Crowd
-                    if ($stored_crowd_user->isMemberOf($crowdUserGroup->id) === false) {
-                        $stored_crowd_user->groups()->attach($crowdUserGroup);
-                    }
+        
+                // Check if user has a group retrieved from Crowd
+                if ($stored_crowd_user->isMemberOf($crowdUserGroup->id) === false) {
+                    $stored_crowd_user->groups()->attach($crowdUserGroup);
                 }
-                
-                $stored_crowd_user->save();
-                
-                return true;
             }
+    
+            $stored_crowd_user->save();
+    
+            return true;
         }
         
         return false;
