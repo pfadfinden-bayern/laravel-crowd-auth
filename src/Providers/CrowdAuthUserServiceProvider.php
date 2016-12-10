@@ -115,7 +115,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
             // Check if user exists in DB, if not add it.
             $stored_crowd_user = CrowdUser::where('crowd_key', '=', $user->key)->first();
             if ($stored_crowd_user === null) {
-                $stored_crowd_user = CrowdUser::create(array(
+                $stored_crowd_user = CrowdUser::create([
                     'crowd_key'    => $user->key,
                     'username'     => $user->username,
                     'email'        => $user->email,
@@ -123,7 +123,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                     'display_name' => $user->display_name,
                     'first_name'   => $user->first_name,
                     'last_name'    => $user->last_name,
-                ));
+                ]);
             }
     
             // Detach all old groups from user and re-attach current ones.

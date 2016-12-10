@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class CrowdGroup extends Model
 {
-
     /**
      * Whitelist
      *
