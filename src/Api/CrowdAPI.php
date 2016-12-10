@@ -281,9 +281,12 @@ class CrowdAPI {
             logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
     
             $groups = [];
-            $count  = count($data->groups);
-            for ($i = 0; $i < $count; $i++) {
-                $groups[] = $data->groups[$i]->name;
+            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups', ['raw' => var_export($data->groups, true)]);
+            foreach ($data->groups as $group) {
+                logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups -> group', ['raw' => var_export($group, true)]);
+                $groups[] = (string)$group->name;
+        
+                logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups -> group -> name', ['name' => $group->name]);
             }
             
             return $groups;
