@@ -26,11 +26,11 @@ class CreateCrowdAuthUsersTable extends Migration
         {
             $table->increments('id');
             $table->string('crowd_key')->unique();
-            $table->string('username');
-            $table->string('email');
-            $table->string('display_name');
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('username')->default('');
+            $table->string('email')->default('');
+            $table->string('display_name')->default('');
+            $table->string('first_name')->default('');
+            $table->string('last_name')->default('');
             $table->timestamps();
         });
     }

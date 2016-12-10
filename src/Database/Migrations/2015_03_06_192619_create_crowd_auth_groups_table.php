@@ -25,7 +25,7 @@ class CreateCrowdAuthGroupsTable extends Migration
         Schema::create('crowd_auth_groups', function (Blueprint $table)
         {
             $table->increments('id');
-            $table->string('group_name');
+            $table->string('group_name')->default('');
             $table->timestamps();
         });
     }
