@@ -17,21 +17,6 @@ class CrowdAuthUserServiceProvider implements UserProvider
 {
     
     /**
-     * @var CoreAuthUser
-     */
-    protected $auth_user_model;
-    
-    /**
-     * @var CoreAuthPermission
-     */
-    protected $auth_permission_model;
-    
-    /**
-     * @var CoreAuthGroup
-     */
-    protected $auth_group_model;
-    
-    /**
      * @var Config
      */
     protected $config;
@@ -129,9 +114,8 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 
                 // Save new groups breh
                 foreach ($user->usergroups as $usergroup) {
-                    +
-                        
-                        // Check if usergroup already exists in the DB, if not add it.
+    
+                    // Check if usergroup already exists in the DB, if not add it.
                     $crowdUserGroup = CrowdGroup::where('group_name', '=', $usergroup)->first();
                     if ($crowdUserGroup === null) {
                         $crowdUserGroup = CrowdGroup::create(array(
