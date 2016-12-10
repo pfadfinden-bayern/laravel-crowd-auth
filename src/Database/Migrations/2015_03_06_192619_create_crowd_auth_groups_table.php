@@ -12,8 +12,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateCrowdGroupsTable extends Migration {
-
+class CreateCrowdAuthGroupsTable extends Migration
+{
+    
     /**
      * Run the migrations.
      *
@@ -28,8 +29,8 @@ class CreateCrowdGroupsTable extends Migration {
             $table->timestamps();
         });
     }
-
-
+    
+    
     /**
      * Reverse the migrations.
      *
@@ -39,5 +40,5 @@ class CreateCrowdGroupsTable extends Migration {
     {
         Schema::drop('crowd_auth_groups');
     }
-
+    
 }

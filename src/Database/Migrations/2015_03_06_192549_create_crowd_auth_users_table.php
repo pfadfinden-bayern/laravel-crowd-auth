@@ -12,7 +12,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateCrowdUsersTable extends Migration {
+class CreateCrowdAuthUsersTable extends Migration
+{
 
     /**
      * Run the migrations.

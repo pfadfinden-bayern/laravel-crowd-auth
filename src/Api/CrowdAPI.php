@@ -160,7 +160,7 @@ class CrowdAPI {
             $resourcePath .= '?' . http_build_query($requestData);
             $requestData = '';
         } else if (is_array($requestData)) {
-            $requestData = http_build_query($requestData);
+            $requestData = json_encode($requestData);
         }
     
         $request = $this->requestFactory->createRequest($requestType, $resourcePath, $this->_headers, $requestData);
@@ -193,7 +193,7 @@ class CrowdAPI {
     
                 'response-status' => $exception->getResponse()->getStatusCode(),
                 'response-reason' => $exception->getResponse()->getReasonPhrase(),
-                'response-headers' => $response->getHeaders(),
+                'response-headers' => $exception->getResponse()->getHeaders(),
                 'response-body'    => (string)$exception->getResponse()->getBody(),
             ]);
             throw $exception;
@@ -242,7 +242,7 @@ class CrowdAPI {
         if ($response->getStatusCode() === 200) {
             $data = json_decode((string)$response->getBody());
     
-            logger()->debug('lol', ['value' => var_export($data, true), 'raw' => (string)$response->getBody()]);
+            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
 
             $userData = [
                 'key'          => $data->key,
@@ -278,10 +278,12 @@ class CrowdAPI {
         
         if ($response->getStatusCode() === 200) {
             $data   = json_decode((string)$response->getBody());
+            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
+    
             $groups = [];
             $count  = count($data->groups);
             for ($i = 0; $i < $count; $i++) {
-                $groups[] = $data->groups[$i]['name'];
+                $groups[] = $data->groups[$i]->name;
             }
             
             return $groups;
@@ -304,7 +306,9 @@ class CrowdAPI {
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
             $data = json_decode((string)$response->getBody());
-            
+            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
+    
+    
             return $data->token;
         }
         
@@ -332,6 +336,7 @@ class CrowdAPI {
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
         if ($response->getStatusCode() === 200) {
             $data = json_decode((string)$response->getBody());
+            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
             
             return $data->token;
         }

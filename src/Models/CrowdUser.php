@@ -11,13 +11,14 @@
 
 namespace Crowd\Auth\Models;
 
+use Illuminate\Auth\UserTrait;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class CrowdUser extends Authenticatable
 {
     
     use UserTrait;
-
+    
     /**
      * Whitelist
      *
@@ -37,7 +38,7 @@ class CrowdUser extends Authenticatable
         'password',
         'remember_token',
     ];
-
+    
     /**
      * The database table used by the model.
      *
@@ -121,7 +122,7 @@ class CrowdUser extends Authenticatable
     {
         return $query->select('id')->where('display_name', 'LIKE', "%{$name}%");
     }
-
+    
     /**
      * Get all groups that belong to the user
      *
