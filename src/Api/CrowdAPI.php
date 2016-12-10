@@ -134,6 +134,9 @@ class CrowdAPI {
             
             if ($response->getStatusCode() === 201) {
                 $data = json_decode((string)$response->getBody());
+    
+                logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
+                
                 if ($credentials['username'] === $data->user->name) {
                     return $data->token;
                 }
@@ -278,15 +281,10 @@ class CrowdAPI {
         
         if ($response->getStatusCode() === 200) {
             $data   = json_decode((string)$response->getBody());
-            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ')', ['raw' => var_export($data, true)]);
     
             $groups = [];
-            logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups', ['raw' => var_export($data->groups, true)]);
             foreach ($data->groups as $group) {
-                logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups -> group', ['raw' => var_export($group, true)]);
                 $groups[] = (string)$group->name;
-        
-                logger()->debug('Crowd-Auth (' . __FUNCTION__ . ') -> groups -> group -> name', ['name' => $group->name]);
             }
             
             return $groups;
@@ -335,7 +333,7 @@ class CrowdAPI {
                 (object)[
                     'name'  => 'remote_address',
                     'value' => $user_ip,
-                ],
+                ]
             ],
         ];
         $response    = $this->runCrowdAPI($apiEndpoint, 'POST', $apiData);
