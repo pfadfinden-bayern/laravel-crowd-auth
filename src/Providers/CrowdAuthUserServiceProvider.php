@@ -1,5 +1,6 @@
 <?php namespace Crowd\Auth\Providers;
 
+use Crowd\Auth\Models\CrowdGroup;
 use Crowd\Auth\Models\CrowdUser;
 use Illuminate\Auth\GenericUser;
 use Illuminate\Auth\UserInterface;
