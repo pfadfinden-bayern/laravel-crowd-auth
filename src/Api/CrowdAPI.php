@@ -330,8 +330,8 @@ class CrowdAPI {
     public function ssoUpdateToken($token, $user_ip)
     {
         $apiEndpoint = '/1/session/'.$token;
-        $apiData     = [
-            'validationFactors' => [
+        $apiData = (object)[
+            'validationFactors' => (object)[
                 'name'  => 'remote_address',
                 'value' => $user_ip,
             ],
