@@ -36,7 +36,7 @@ return array(
     | Here is where you specify your password that you use for your crowd
     | application.
     */
-    'app_password' => env('CROWD_AUTH_APP_PASSWORD', 'crowd-app-password'),
+    'app_password'     => env('CROWD_AUTH_APP_PASSWORD', 'crowd-app-password'),
     
     /*
     |--------------------------------------------------------------------------
@@ -45,7 +45,7 @@ return array(
     | Here is where you specify your how often we should check in with the SSO
     | provider and update groups and permissions. Value expressed in seconds.
     */
-    'refresh_interval' => 60 * 5,
+    'refresh_interval' => env('CROWD_AUTH_APP_REFRESH_INTERVAL', 60 * 5),
     
     /*
     |--------------------------------------------------------------------------
@@ -57,7 +57,7 @@ return array(
     |
     | EDIT: THIS DOES NOTHING FOR NOW
     */
-    'app_groups' => array(
+    'app_groups'       => array(
     
         'app-administrators',
     
