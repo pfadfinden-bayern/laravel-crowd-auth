@@ -3,6 +3,11 @@
 use Crowd\Auth\Api\CrowdAPI;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Class CrowdApiServiceProvider
+ *
+ * @package Crowd\Auth\Providers
+ */
 class CrowdApiServiceProvider extends ServiceProvider
 {
     

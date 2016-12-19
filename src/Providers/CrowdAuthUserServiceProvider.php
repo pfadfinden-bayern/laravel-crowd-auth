@@ -1,26 +1,36 @@
 <?php namespace Crowd\Auth\Providers;
 
 use Carbon\Carbon;
+use Crowd\Auth\Api\CrowdAPI;
 use Crowd\Auth\Models\CrowdGroup;
 use Crowd\Auth\Models\CrowdUser;
+use Exception;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
-use Request;
 
 /**
  * Class CoreAuthUserServiceProvider
  *
- * @package Brave\Core\Providers
+ * @package Crowd\Auth\Providers
  */
 class CrowdAuthUserServiceProvider implements UserProvider
 {
     
     /**
+     * Laravel App Config object
+     *
      * @var Config
      */
     protected $config;
+    
+    /**
+     * Laravel App Config object
+     *
+     * @var CrowdAPI
+     */
+    protected $crowdApi;
     
     /**
      * @param ConfigRepository $config
@@ -28,6 +38,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function __construct(ConfigRepository $config)
     {
         $this->config = $config;
+        $this->crowdApi = resolve('crowd-api');
     }
     
     /**
@@ -36,6 +47,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
      * @param  array $credentials
      *
      * @return CrowdUser|null
+     * @throws Exception
      */
     public function retrieveByCredentials(array $credentials)
     {
@@ -52,6 +64,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
      * @param string|int $identifier The username of the SSO user
      *
      * @return CrowdUser
+     * @throws Exception
      */
     public function retrieveById($identifier)
     {
@@ -73,10 +86,10 @@ class CrowdAuthUserServiceProvider implements UserProvider
             }
             
             // We need to check with the SSO endpoint to see if this user still exists
-            if (resolve('crowd-api')->doesUserExist($identifier)) {
+            if ($this->crowdApi->doesUserExist($identifier)) {
                 
                 // Ok user exists, now we can get the details of the user.
-                $userData = resolve('crowd-api')->getUser($identifier);
+                $userData = $this->crowdApi->getUser($identifier);
                 
                 // Now that we have the user, we can attempt to validate the data locally.
                 if (!empty($userData)) {
@@ -104,42 +117,40 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function validateCredentials(Authenticatable $storedCrowdUser, array $credentials)
     {
-        if (resolve('crowd-api')->canUserLogin($credentials['username'])) {
+        if ($this->crowdApi->canUserLogin($credentials['username'])) {
             
             try {
                 // Attempt the sso checks
-                $token = resolve('crowd-api')->ssoAuthUser($credentials, request()->ip());
-                if ($token === null) {
+                $token = $this->crowdApi->ssoAuthUser($credentials, request()->ip());
+                if (empty($token)) {
+                    
                     // No token? No Access.
                     return false;
                 }
-                
-                $sso_user = resolve('crowd-api')->ssoGetUser($credentials['username'], $token);
-                if ($sso_user === null) {
+    
+                $sso_user = $this->crowdApi->ssoGetUser($credentials['username'], $token);
+                if (empty($sso_user)) {
                     return false;
                 }
-                
-                // Does the expected user match?
+    
+                // Does the expected user data match?
                 if ($sso_user['key'] !== $storedCrowdUser->crowd_key || $sso_user['user-name'] !== $storedCrowdUser->username) {
                     return false;
                 }
-                
-            } catch (\Exception $exception) {
+    
+            } catch (Exception $exception) {
                 return false;
             }
-            
-            // While this method is just ment to validate that some credentials match a valud u ser object,
+        
+            // While this method is just meant to validate that some credentials match a valid user object,
             // we have to do some work here to make sure we are getting valid user data in our database.
             // This works in concert with `$this->retrieveById()` to fully update the user object with any new user data.
             $storedCrowdUser->display_name = $sso_user['display-name'];
             $storedCrowdUser->first_name   = $sso_user['first-name'];
             $storedCrowdUser->last_name    = $sso_user['last-name'];
-            
-            // Update the SSO token.
+        
+            // Update the stored SSO token.
             $storedCrowdUser->sso_token = $token;
-            
-            // Detach all old groups from user and re-attach current ones.
-            $storedCrowdUser->groups()->detach();
             
             // Save group associations and any newly created groups to the DB
             $groups = [];
@@ -161,8 +172,8 @@ class CrowdAuthUserServiceProvider implements UserProvider
             
             // Finally save all the user data to the DB
             $storedCrowdUser->save();
-            
-            // Update groups on the user
+        
+            // Update accessible groups on the user
             $storedCrowdUser->groups()->sync($groups);
             
             return true;
@@ -177,20 +188,18 @@ class CrowdAuthUserServiceProvider implements UserProvider
      * @param  mixed  $identifier
      * @param  string $token
      *
-     * @return CrowdUser|null
+     * @return CrowdUser|Authenticatable|null
      */
     public function retrieveByToken($identifier, $token)
     {
-        $userData = CrowdUser::where('id', '=', $identifier)->where('remember_token', '=', $token)->first();
-        
-        return $userData;
+        return CrowdUser::where('id', '=', $identifier)->where('remember_token', '=', $token)->first();
     }
     
     /**
      * Update the "remember me" token for the given user in storage.
      *
-     * @param  Authenticatable $user
-     * @param  string          $token
+     * @param  CrowdUser|Authenticatable|null $user
+     * @param  string                         $token
      *
      * @return null
      */
