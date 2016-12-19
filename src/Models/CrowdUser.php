@@ -22,7 +22,16 @@ class CrowdUser extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = ['crowd_key', 'username', 'email', 'display_name', 'first_name', 'last_name', 'remember_token'];
+    protected $fillable = [
+        'crowd_key',
+        'username',
+        'email',
+        'display_name',
+        'first_name',
+        'last_name',
+        'sso_token',
+        'remember_token',
+    ];
     
     /**
      * The attributes that should be hidden for arrays.
@@ -30,7 +39,7 @@ class CrowdUser extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password',
+        'sso_token',
         'remember_token',
     ];
     

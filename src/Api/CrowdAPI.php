@@ -254,7 +254,6 @@ class CrowdAPI {
                 'last-name'    => $data->{'last-name'},
                 'display-name' => $data->{'display-name'},
                 'email'        => $data->email,
-                'email'        => $data->email,
                 'attributes'   => [],
                 'groups'       => $this->getUserGroups($data->name),
             ];

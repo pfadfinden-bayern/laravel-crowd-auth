@@ -26,7 +26,7 @@ class CreateCrowdAuthUsersTable extends Migration
         {
             $table->increments('id');
             $table->string('crowd_key')->unique();
-            $table->string('token')->unique();
+            $table->string('sso_token', 100)->unique();
             $table->string('username')->default('');
             $table->string('email')->default('');
             $table->string('display_name')->default('');

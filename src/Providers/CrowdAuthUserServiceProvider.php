@@ -2,11 +2,11 @@
 
 use Crowd\Auth\Models\CrowdGroup;
 use Crowd\Auth\Models\CrowdUser;
-use Illuminate\Auth\GenericUser;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Request;
 
 /**
  * Class CoreAuthUserServiceProvider
@@ -22,17 +22,11 @@ class CrowdAuthUserServiceProvider implements UserProvider
     protected $config;
     
     /**
-     * @var CoreAuthGroup
-     */
-    protected $debug;
-    
-    /**
      * @param ConfigRepository $config
      */
     public function __construct(ConfigRepository $config)
     {
         $this->config = $config;
-        $this->debug  = $this->config->get('app.debug');
     }
     
     /**
@@ -40,7 +34,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
      *
      * @param  array $credentials
      *
-     * @return GenericUser|null
+     * @return CrowdUser|null
      */
     public function retrieveByCredentials(array $credentials)
     {
@@ -54,26 +48,28 @@ class CrowdAuthUserServiceProvider implements UserProvider
     /**
      * Retrieve a user by their unique identifier.
      *
-     * @param  mixed $identifier
+     * @param string $identifier The username of the SSO user
      *
-     * @return GenericUser|null
+     * @return CrowdUser
      */
     public function retrieveById($identifier)
     {
         if ($identifier !== null) {
+    
+            // We need to check with the SSO endpoint to see if this user still exists
             if (resolve('crowd-api')->doesUserExist($identifier)) {
-                
+    
+                // Ok user exists, now we can get the details of the user.
                 $userData = resolve('crowd-api')->getUser($identifier);
+    
+                // Now that we have the user, we can attempt to validate the data locally.
                 if (!empty($userData)) {
-                    return new GenericUser([
-                        'id'           => $userData['user-name'],
-                        'username'     => $userData['user-name'],
-                        'key'          => $userData['key'],
-                        'display_name' => $userData['display-name'],
-                        'first_name'   => $userData['first-name'],
-                        'last_name'    => $userData['last-name'],
-                        'email'        => $userData['email'],
-                        'user_groups'  => $userData['groups'],
+    
+                    // Check if user exists in DB, if not create an in-memory model and pass it along.
+                    return CrowdUser::firstOrNew([
+                        'crowd_key' => $userData['key'],
+                        'username'  => $userData['user-name'],
+                        'email'     => $userData['email'],
                     ]);
                 }
             }
@@ -96,10 +92,10 @@ class CrowdAuthUserServiceProvider implements UserProvider
     
             try {
                 // Attempt the sso checks
-                $ip_address = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-        
-                $token = resolve('crowd-api')->ssoAuthUser($credentials, $ip_address);
+                $token = resolve('crowd-api')->ssoAuthUser($credentials, request()->ip());
                 if ($token === null) {
+    
+                    // No token? No Access.
                     return false;
                 }
         
@@ -108,47 +104,55 @@ class CrowdAuthUserServiceProvider implements UserProvider
                     return false;
                 }
         
+                // Does the expected user match?
+                if ($sso_user->key !== $user->crowd_key || $sso_user->username !== $user->username) {
+                    return false;
+                }
+                
             } catch (\Exception $exception) {
                 return false;
             }
     
             // Check if user exists in DB, if not add it.
-            $stored_crowd_user = CrowdUser::where('crowd_key', '=', $user->key)->first();
-            if ($stored_crowd_user === null) {
-                $stored_crowd_user = CrowdUser::create([
-                    'crowd_key'    => $user->key,
-                    'username'     => $user->username,
-                    'email'        => $user->email,
-                    'token'        => $token,
-                    'display_name' => $user->display_name,
-                    'first_name'   => $user->first_name,
-                    'last_name'    => $user->last_name,
-                ]);
+            $storedCrowdUser = CrowdUser::firstOrNew([
+                'crowd_key' => $sso_user->key,
+                'username'  => $sso_user->username,
+                'email'     => $sso_user->email,
+            ]);
+    
+            if (!$storedCrowdUser->exists) {
+                $storedCrowdUser->display_name = $sso_user->display_name;
+                $storedCrowdUser->first_name   = $sso_user->first_name;
+                $storedCrowdUser->last_name    = $sso_user->last_name;
             }
     
+            // Update the SSO token every time.
+            $storedCrowdUser->token = $token;
+            
             // Detach all old groups from user and re-attach current ones.
-            $stored_crowd_user->groups()->detach();
-    
+            $storedCrowdUser->groups()->detach();
+            
             // Save new groups breh
-            foreach ($user->user_groups as $group_name) {
-    
+            foreach ($sso_user->groups as $group_name) {
+                
                 // Check if user_group already exists in the DB, if not add it.
                 $crowdUserGroup = CrowdGroup::firstOrNew([
                     'name' => $group_name,
                 ]);
-    
+        
                 // save to the DB if it does not exist
                 if (!$crowdUserGroup->exists) {
                     $crowdUserGroup->save();
                 }
                 
                 // Check if user has a group retrieved from Crowd
-                if (!$stored_crowd_user->isMemberOf($crowdUserGroup->name)) {
-                    $stored_crowd_user->groups()->attach($crowdUserGroup);
+                if (!$storedCrowdUser->isMemberOf($crowdUserGroup->name)) {
+                    $storedCrowdUser->groups()->attach($crowdUserGroup);
                 }
             }
     
-            $stored_crowd_user->save();
+            $storedCrowdUser->save();
+            
             return true;
         }
         
@@ -161,16 +165,13 @@ class CrowdAuthUserServiceProvider implements UserProvider
      * @param  mixed  $identifier
      * @param  string $token
      *
-     * @return GenericUser|null
+     * @return CrowdUser|null
      */
     public function retrieveByToken($identifier, $token)
     {
-        $userData = CrowdUser::where('name', '=', $identifier)->where('remember_token', '=', $token)->first();
-        if ($userData !== null) {
-            return $this->retrieveById($userData['username']);
-        }
-        
-        return null;
+        $userData = CrowdUser::where('id', '=', $identifier)->where('remember_token', '=', $token)->first();
+    
+        return $userData;
     }
     
     /**
@@ -185,8 +186,8 @@ class CrowdAuthUserServiceProvider implements UserProvider
     {
         if ($user !== null) {
             $user->setRememberToken($token);
+            $user->save();
         }
-        
         return null;
     }
 }
