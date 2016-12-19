@@ -22,7 +22,7 @@ class CrowdGroup extends Model
      *
      * @var array
      */
-    protected $fillable = array('name');
+    protected $fillable = ['name'];
 
     /**
      * The database table used by the model.

@@ -138,7 +138,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 ]);
     
                 // save to the DB if it does not exist
-                if ($crowdUserGroup->exists) {
+                if (!$crowdUserGroup->exists) {
                     $crowdUserGroup->save();
                 }
                 
