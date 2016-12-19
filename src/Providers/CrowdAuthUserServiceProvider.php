@@ -136,6 +136,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 $crowdUserGroup = CrowdGroup::firstOrNew([
                     'name' => $group_name,
                 ]);
+                $crowdUserGroup->save();
                 
                 // Check if user has a group retrieved from Crowd
                 if (!$stored_crowd_user->isMemberOf($crowdUserGroup->name)) {
