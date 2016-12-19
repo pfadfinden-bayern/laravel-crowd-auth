@@ -81,12 +81,12 @@ class CrowdAuthUserServiceProvider implements UserProvider
     /**
      * Validate a user against the given credentials.
      *
-     * @param  Authenticatable $user
-     * @param  array           $credentials
+     * @param  Authenticatable|CrowdUser $storedCrowdUser
+     * @param  array                     $credentials
      *
      * @return bool
      */
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials(Authenticatable $storedCrowdUser, array $credentials)
     {
         if (resolve('crowd-api')->canUserLogin($credentials['username'])) {
     
@@ -94,7 +94,6 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 // Attempt the sso checks
                 $token = resolve('crowd-api')->ssoAuthUser($credentials, request()->ip());
                 if ($token === null) {
-    
                     // No token? No Access.
                     return false;
                 }
@@ -105,7 +104,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 }
         
                 // Does the expected user match?
-                if ($sso_user->key !== $user->crowd_key || $sso_user->username !== $user->username) {
+                if ($sso_user->key !== $storedCrowdUser->crowd_key || $sso_user->username !== $storedCrowdUser->username) {
                     return false;
                 }
                 
@@ -113,26 +112,21 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 return false;
             }
     
-            // Check if user exists in DB, if not add it.
-            $storedCrowdUser = CrowdUser::firstOrNew([
-                'crowd_key' => $sso_user->key,
-                'username'  => $sso_user->username,
-                'email'     => $sso_user->email,
-            ]);
+            // While this method is just ment to validate that some credentials match a valud u ser object,
+            // we have to do some work here to make sure we are getting valid user data in our database.
+            // This works in concert with `$this->retrieveById()` to fully update the user object with any new user data.
+            $storedCrowdUser->display_name = $sso_user->display_name;
+            $storedCrowdUser->first_name   = $sso_user->first_name;
+            $storedCrowdUser->last_name    = $sso_user->last_name;
     
-            if (!$storedCrowdUser->exists) {
-                $storedCrowdUser->display_name = $sso_user->display_name;
-                $storedCrowdUser->first_name   = $sso_user->first_name;
-                $storedCrowdUser->last_name    = $sso_user->last_name;
-            }
-    
-            // Update the SSO token every time.
-            $storedCrowdUser->token = $token;
+            // Update the SSO token.
+            $storedCrowdUser->sso_token = $token;
             
             // Detach all old groups from user and re-attach current ones.
             $storedCrowdUser->groups()->detach();
-            
-            // Save new groups breh
+    
+            // Save group associations and any newly created groups to the DB
+            $groups = [];
             foreach ($sso_user->groups as $group_name) {
                 
                 // Check if user_group already exists in the DB, if not add it.
@@ -144,15 +138,16 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 if (!$crowdUserGroup->exists) {
                     $crowdUserGroup->save();
                 }
-                
-                // Check if user has a group retrieved from Crowd
-                if (!$storedCrowdUser->isMemberOf($crowdUserGroup->name)) {
-                    $storedCrowdUser->groups()->attach($crowdUserGroup);
-                }
+    
+                // get the group ID and attach it to the sync object
+                $groups[] = $crowdUserGroup->id;
+    
+                // Update groups on the user
+                $storedCrowdUser->groups()->sync($groups);
             }
     
+            // Finally save all the user data to the DB
             $storedCrowdUser->save();
-            
             return true;
         }
         

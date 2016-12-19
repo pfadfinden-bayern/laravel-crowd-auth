@@ -25,8 +25,8 @@ class CreateCrowdAuthUsersTable extends Migration
         Schema::create('crowd_auth_users', function (Blueprint $table)
         {
             $table->increments('id');
-            $table->string('crowd_key')->unique();
-            $table->string('sso_token', 100)->unique();
+            $table->string('crowd_key')->default('');
+            $table->string('sso_token', 100)->default('');
             $table->string('username')->default('');
             $table->string('email')->default('');
             $table->string('display_name')->default('');
