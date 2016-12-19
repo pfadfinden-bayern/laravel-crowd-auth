@@ -13,6 +13,13 @@ namespace Crowd\Auth\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class CrowdGroup
+ *
+ * @property-write int name The name of the group
+ *
+ * @package Crowd\Auth\Models
+ */
 class CrowdGroup extends Model
 {
     /**

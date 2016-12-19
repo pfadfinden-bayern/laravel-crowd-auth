@@ -10,7 +10,7 @@
  */
 
 return array(
-
+    
     /*
     |--------------------------------------------------------------------------
     | Crowd Auth: Crowd URL
@@ -18,9 +18,8 @@ return array(
     | Please specify the URL to your crowd service for authentication, it must
     | NOT end in a forward slash and be a publicly accesible URL.
     */
-    
     'url' => env('CROWD_AUTH_APP_URL', 'http://crowd.example.com:8080/crowd'),
-
+    
     /*
     |--------------------------------------------------------------------------
     | Crowd Auth: Application Name
@@ -28,9 +27,8 @@ return array(
     | Here is where you specify your application name that you use for your
     | crowd application.
     */
-    
     'app_name' => env('CROWD_AUTH_APP_NAME', 'crowd-app-name'),
-
+    
     /*
     |--------------------------------------------------------------------------
     | Crowd Auth: Application Password
@@ -38,9 +36,17 @@ return array(
     | Here is where you specify your password that you use for your crowd
     | application.
     */
-    
     'app_password' => env('CROWD_AUTH_APP_PASSWORD', 'crowd-app-password'),
-
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Crowd Auth: SSO Refresh Interval
+    |--------------------------------------------------------------------------
+    | Here is where you specify your how often we should check in with the SSO
+    | provider and update groups and permissions. Value expressed in seconds.
+    */
+    'refresh_interval' => 60 * 5,
+    
     /*
     |--------------------------------------------------------------------------
     | Crowd Auth: Usable User Groups [******* FEATURE-DISABLED *********]
@@ -51,11 +57,10 @@ return array(
     |
     | EDIT: THIS DOES NOTHING FOR NOW
     */
-    
     'app_groups' => array(
-
+    
         'app-administrators',
-
+    
         'app-users',
 
     ),

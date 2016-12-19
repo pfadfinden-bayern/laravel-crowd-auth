@@ -13,6 +13,21 @@ namespace Crowd\Auth\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+/**
+ * Class CrowdUser
+ *
+ * @property-read-write string crowd_key The unique identifier taken from Crowd for this user
+ * @property-read-write string username The SSO User's User Name
+ * @property-read-write string email The SSO User's Email Address
+ * @property-read-write string display_name The SSO User's Last Name
+ * @property-read-write string first_name The SSO User's First Name
+ * @property-read-write string last_name The SSO User's Last Name
+ * @property-read-write string sso_token The SSO token to identify this user in Crowd
+ * @property-read-write string remember_token Remember-Me login cookie session identifier
+ * @property-read-write BelongsToMany groups Groups this user is a member of
+ *
+ * @package             Crowd\Auth\Models
+ */
 class CrowdUser extends Authenticatable
 {
     /**
@@ -63,11 +78,11 @@ class CrowdUser extends Authenticatable
     /**
      * Get the password for the user.
      *
-     * @return string
+     * @return null
      */
     public function getAuthPassword()
     {
-        return $this->password;
+        return null;
     }
     
     /**
