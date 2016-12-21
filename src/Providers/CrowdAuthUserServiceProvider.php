@@ -69,7 +69,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function retrieveById($identifier)
     {
         // if we get no identifier.... I just dont know.
-        if (empty($identifier)) {
+        if (!empty($identifier)) {
             
             // We will only ever get an integer identifier if the user was previously authed
             if (is_int($identifier)) {
@@ -141,14 +141,14 @@ class CrowdAuthUserServiceProvider implements UserProvider
             } catch (Exception $exception) {
                 return false;
             }
-        
+    
             // While this method is just meant to validate that some credentials match a valid user object,
             // we have to do some work here to make sure we are getting valid user data in our database.
             // This works in concert with `$this->retrieveById()` to fully update the user object with any new user data.
             $storedCrowdUser->display_name = $sso_user['display-name'];
             $storedCrowdUser->first_name   = $sso_user['first-name'];
             $storedCrowdUser->last_name    = $sso_user['last-name'];
-        
+    
             // Update the stored SSO token.
             $storedCrowdUser->sso_token = $token;
             
@@ -172,7 +172,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
             
             // Finally save all the user data to the DB
             $storedCrowdUser->save();
-        
+    
             // Update accessible groups on the user
             $storedCrowdUser->groups()->sync($groups);
             
