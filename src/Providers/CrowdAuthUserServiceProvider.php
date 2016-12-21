@@ -9,6 +9,7 @@ use Illuminate\Auth\UserInterface;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class CoreAuthUserServiceProvider
@@ -26,6 +27,13 @@ class CrowdAuthUserServiceProvider implements UserProvider
     protected $config;
     
     /**
+     * Laravel App Custom User Model
+     *
+     * @var Model
+     */
+    protected $userModel;
+    
+    /**
      * Laravel App Config object
      *
      * @var CrowdAPI
@@ -38,6 +46,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     public function __construct(ConfigRepository $config)
     {
         $this->config = $config;
+        $this->userModel = $config['crowd_auth.user_model'];
         $this->crowdApi = resolve('crowd-api');
     }
     
@@ -75,7 +84,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
             if (is_int($identifier)) {
                 
                 // Find the authed user
-                $user       = CrowdUser::find($identifier);
+                $user       = $this->userModel::find($identifier);
                 $identifier = $user->username;
                 
                 // Only force an SSO update/recheck of the user every 5 minutes
@@ -95,7 +104,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 if (!empty($userData)) {
                     
                     // Check if user exists in DB, if not create an in-memory model and pass it along.
-                    return CrowdUser::firstOrNew([
+                    return $this->userModel::firstOrNew([
                         'crowd_key' => $userData['key'],
                         'username'  => $userData['user-name'],
                         'email'     => $userData['email'],
@@ -192,7 +201,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        return CrowdUser::where('id', '=', $identifier)->where('remember_token', '=', $token)->first();
+        return $this->userModel::where('id', '=', $identifier)->where('remember_token', '=', $token)->first();
     }
     
     /**

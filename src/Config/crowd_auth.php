@@ -13,12 +13,20 @@ return array(
     
     /*
     |--------------------------------------------------------------------------
+    | Crowd Auth: User Model
+    |--------------------------------------------------------------------------
+    | The class name of your apps main user model, usually extending CrowdUser
+    */
+    'user_model'       => App\User::class,
+    
+    /*
+    |--------------------------------------------------------------------------
     | Crowd Auth: Crowd URL
     |--------------------------------------------------------------------------
     | Please specify the URL to your crowd service for authentication, it must
     | NOT end in a forward slash and be a publicly accesible URL.
     */
-    'url' => env('CROWD_AUTH_APP_URL', 'http://crowd.example.com:8080/crowd'),
+    'url'              => env('CROWD_AUTH_APP_URL', 'http://crowd.example.com:8080/crowd'),
     
     /*
     |--------------------------------------------------------------------------
@@ -27,7 +35,7 @@ return array(
     | Here is where you specify your application name that you use for your
     | crowd application.
     */
-    'app_name' => env('CROWD_AUTH_APP_NAME', 'crowd-app-name'),
+    'app_name'         => env('CROWD_AUTH_APP_NAME', 'crowd-app-name'),
     
     /*
     |--------------------------------------------------------------------------
@@ -45,7 +53,7 @@ return array(
     | Here is where you specify your how often we should check in with the SSO
     | provider and update groups and permissions. Value expressed in seconds.
     */
-    'refresh_interval' => env('CROWD_AUTH_APP_REFRESH_INTERVAL', 60 * 5),
+    'refresh_interval' => 60 * 5,
     
     /*
     |--------------------------------------------------------------------------
@@ -58,11 +66,11 @@ return array(
     | EDIT: THIS DOES NOTHING FOR NOW
     */
     'app_groups'       => array(
-    
+        
         'app-administrators',
-    
+        
         'app-users',
-
+    
     ),
 
 );
