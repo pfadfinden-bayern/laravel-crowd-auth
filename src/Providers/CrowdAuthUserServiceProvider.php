@@ -85,6 +85,11 @@ class CrowdAuthUserServiceProvider implements UserProvider
                 
                 // Find the authed user
                 $user       = $this->userModel::find($identifier);
+    
+                // if user is not found
+                if (!$user) {
+                    return null;
+                }
                 $identifier = $user->username;
                 
                 // Only force an SSO update/recheck of the user every 5 minutes
