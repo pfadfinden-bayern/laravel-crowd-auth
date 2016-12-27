@@ -53,7 +53,7 @@ return array(
     | Here is where you specify your how often we should check in with the SSO
     | provider and update groups and permissions. Value expressed in seconds.
     */
-    'refresh_interval' => 60 * 5,
+    'refresh_interval' => env('CROWD_AUTH_APP_REFRESH_INTERVAL', 60 * 5),
     
     /*
     |--------------------------------------------------------------------------
