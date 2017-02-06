@@ -42,7 +42,7 @@ Once the configuration is published go to your `config/crowd_auth.php` and confi
 After you have configured your Atlassian Crowd settings you need to change the `driver` setting in `config/auth.php` to:
 
 ```php
-'driver' => 'crowd-auth',
+'driver' => 'crowd',
 ```
 
 Once all this is completed you can simply use `Auth::Attempt()` and it will attempt to login using your Atlassian Crowd server.

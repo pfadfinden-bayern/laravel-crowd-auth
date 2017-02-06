@@ -47,7 +47,7 @@ class CrowdAuthUserServiceProvider implements UserProvider
     {
         $this->config = $config;
         $this->userModel = $config['crowd_auth.user_model'];
-        $this->crowdApi = resolve('crowd-api');
+        $this->crowdApi = resolve('crowd.api');
     }
     
     /**

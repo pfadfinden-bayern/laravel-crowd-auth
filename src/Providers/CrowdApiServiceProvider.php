@@ -32,7 +32,7 @@ class CrowdApiServiceProvider extends ServiceProvider
     public function register()
     {
         // Use a singleton here, we only need one instance of the api object
-        $this->app->bind('crowd-api', function ($app) {
+        $this->app->bind('crowd.api', function ($app) {
             $config = $app['config']->get('crowd_auth');
             
             return new CrowdAPI(
@@ -46,7 +46,7 @@ class CrowdApiServiceProvider extends ServiceProvider
     
     public function provides()
     {
-        return ['crowd-api'];
+        return ['crowd.api'];
     }
     
 }
