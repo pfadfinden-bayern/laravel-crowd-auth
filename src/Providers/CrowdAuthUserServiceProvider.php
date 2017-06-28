@@ -131,69 +131,69 @@ class CrowdAuthUserServiceProvider implements UserProvider
      */
     public function validateCredentials(Authenticatable $storedCrowdUser, array $credentials)
     {
-        if ($this->crowdApi->canUserLogin($credentials['username'])) {
-            
-            try {
-                // Attempt the sso checks
-                $token = $this->crowdApi->ssoAuthUser($credentials, request()->ip());
-                if (empty($token)) {
-                    
-                    // No token? No Access.
-                    return false;
-                }
-    
-                $sso_user = $this->crowdApi->ssoGetUser($credentials['username'], $token);
-                if (empty($sso_user)) {
-                    return false;
-                }
-    
-                // Does the expected user data match?
-                if ($sso_user['key'] !== $storedCrowdUser->crowd_key || $sso_user['user-name'] !== $storedCrowdUser->username) {
-                    return false;
-                }
-    
-            } catch (Exception $exception) {
+        try {
+            // Attempt the sso checks
+            $token = $this->crowdApi->ssoAuthUser($credentials, request()->ip());
+            if (empty($token)) {
+
+                // No token? No Access.
                 return false;
             }
-    
-            // While this method is just meant to validate that some credentials match a valid user object,
-            // we have to do some work here to make sure we are getting valid user data in our database.
-            // This works in concert with `$this->retrieveById()` to fully update the user object with any new user data.
-            $storedCrowdUser->display_name = $sso_user['display-name'];
-            $storedCrowdUser->first_name   = $sso_user['first-name'];
-            $storedCrowdUser->last_name    = $sso_user['last-name'];
-    
-            // Update the stored SSO token.
-            $storedCrowdUser->sso_token = $token;
-            
-            // Save group associations and any newly created groups to the DB
-            $groups = [];
-            foreach ($sso_user['groups'] as $group_name) {
-                
-                // Check if user_group already exists in the DB, if not add it.
-                $crowdUserGroup = CrowdGroup::firstOrNew([
-                    'name' => $group_name,
-                ]);
-                
-                // save to the DB if it does not exist
-                if (!$crowdUserGroup->exists) {
-                    $crowdUserGroup->save();
-                }
-                
-                // get the group ID and attach it to the sync object
-                $groups[] = $crowdUserGroup->id;
+
+            $sso_user = $this->crowdApi->ssoGetUser($credentials['username'], $token);
+            if (empty($sso_user)) {
+                return false;
             }
-            
-            // Finally save all the user data to the DB
-            $storedCrowdUser->save();
-    
-            // Update accessible groups on the user
-            $storedCrowdUser->groups()->sync($groups);
-            
-            return true;
+
+            // Does the expected user data match?
+            if ($sso_user['key'] !== $storedCrowdUser->crowd_key || $sso_user['user-name'] !== $storedCrowdUser->username) {
+                return false;
+            }
+
+        } catch (Exception $exception) {
+            logger()->error($exception->getMessage(), [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+            return false;
         }
-        
-        return false;
+
+        // While this method is just meant to validate that some credentials match a valid user object,
+        // we have to do some work here to make sure we are getting valid user data in our database.
+        // This works in concert with `$this->retrieveById()` to fully update the user object with any new user data.
+        $storedCrowdUser->display_name = $sso_user['display-name'];
+        $storedCrowdUser->first_name   = $sso_user['first-name'];
+        $storedCrowdUser->last_name    = $sso_user['last-name'];
+
+        // Update the stored SSO token.
+        $storedCrowdUser->sso_token = $token;
+
+        // Save group associations and any newly created groups to the DB
+        $groups = [];
+        foreach ($sso_user['groups'] as $group_name) {
+
+            // Check if user_group already exists in the DB, if not add it.
+            $crowdUserGroup = CrowdGroup::firstOrNew([
+                'name' => $group_name,
+            ]);
+
+            // save to the DB if it does not exist
+            if (!$crowdUserGroup->exists) {
+                $crowdUserGroup->save();
+            }
+
+            // get the group ID and attach it to the sync object
+            $groups[] = $crowdUserGroup->id;
+        }
+
+        // Finally save all the user data to the DB
+        $storedCrowdUser->save();
+
+        // Update accessible groups on the user
+        $storedCrowdUser->groups()->sync($groups);
+
+        return true;
     }
     
     /**

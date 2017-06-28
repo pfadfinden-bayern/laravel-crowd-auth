@@ -59,14 +59,12 @@ class CrowdAPI {
      */
     public function __construct($endpointUrl, $appName, $appPassword)
     {
-    
-    
         $guzzle       = new GuzzleClient();
         $guzzleClient = new GuzzleAdapter($guzzle);
         
         $authentication = new BasicAuth($appName, $appPassword);
     
-        $defaultUserAgent = 'laravel-crowd-auth / v1.0 [matthewglinski@gmail.com]';
+        $defaultUserAgent = 'laravel-crowd-auth / v1.1.1 (https://gitlab.com/mglinski/laravel-crowd-auth) [Package Author: matthewglinski@gmail.com]';
     
         $this->_headers = [
             'Accept'       => 'application/json',
@@ -167,37 +165,51 @@ class CrowdAPI {
         }
     
         $request = $this->requestFactory->createRequest($requestType, $resourcePath, $this->_headers, $requestData);
-        
         $promise = $this->_guzzleClient->sendAsyncRequest($request);
         
         /** @var ResponseInterface $response */
         try {
             $response = $promise->wait();
-    
-            logger()->debug('CrowdAuth Request Successful', [
-                'request-method'  => $request->getMethod(),
-                'request-uri'     => (string)$request->getUri(),
-                'request-headers' => $request->getHeaders(),
-                'request-body'    => (string)$request->getBody(),
-        
-                'response-status'  => $response->getStatusCode(),
-                'response-reason'  => $response->getReasonPhrase(),
-                'response-headers' => $response->getHeaders(),
-                //'response-body'   => (string)$response->getBody(),
-            ]);
-    
+
+            if ($response->getStatusCode() != 200) {
+                logger()->debug('CrowdAuth Request FAILED', [
+                    'request-method'  => $request->getMethod(),
+                    'request-uri'     => (string)$request->getUri(),
+                    'request-headers' => $request->getHeaders(),
+                    'request-body'    => (string)$request->getBody()->rewind(),
+
+                    'response-status'  => $response->getStatusCode(),
+                    'response-reason'  => $response->getReasonPhrase(),
+                    'response-headers' => $response->getHeaders(),
+                    'response-body'   => (string)$response->getBody()->rewind(),
+                ]);
+            } else {
+                logger()->debug('CrowdAuth Request Successful', [
+                    'request-method'  => $request->getMethod(),
+                    'request-uri'     => (string)$request->getUri(),
+                    'request-headers' => $request->getHeaders(),
+                    'request-body'    => (string)$request->getBody()->rewind(),
+
+                    'response-status'  => $response->getStatusCode(),
+                    'response-reason'  => $response->getReasonPhrase(),
+                    'response-headers' => $response->getHeaders(),
+                    'response-body'   => (string)$response->getBody()->rewind(),
+                ]);
+            }
+
+
             return $response;
         } catch (HttpException $exception) {
             logger()->error($exception->getMessage(), [
                 'request-method'   => $exception->getRequest()->getMethod(),
                 'request-uri'      => (string)$exception->getRequest()->getUri(),
                 'request-headers'  => $exception->getRequest()->getHeaders(),
-                'request-body'     => (string)$exception->getRequest()->getBody(),
+                'request-body'     => (string)$exception->getRequest()->getBody()->rewind(),
     
                 'response-status' => $exception->getResponse()->getStatusCode(),
                 'response-reason' => $exception->getResponse()->getReasonPhrase(),
                 'response-headers' => $exception->getResponse()->getHeaders(),
-                'response-body'    => (string)$exception->getResponse()->getBody(),
+                'response-body'    => (string)$exception->getResponse()->getBody()->rewind(),
             ]);
             throw $exception;
         }
@@ -217,10 +229,17 @@ class CrowdAPI {
         $apiEndpoint = '/1/session/'.$token;
         $response    = $this->runCrowdAPI($apiEndpoint, 'GET', array());
         if ($response->getStatusCode() === 200) {
-            $data = json_decode((string)$response->getBody());
+            $data = json_decode((string)$response->getBody()->rewind());
             if ($data->user->name === $username && $token === $data->token) {
                 return $this->getUser($data->user->name);
             }
+        } else {
+            logger()->error('CrowdAuth Request FAILURE', [
+                'response-status' => $response->getStatusCode(),
+                'response-reason' => $response->getReasonPhrase(),
+                'response-headers' => $response->getHeaders(),
+                'response-body'    => (string)$response->getBody()->rewind(),
+            ]);
         }
         
         return null;
@@ -259,6 +278,18 @@ class CrowdAPI {
             ];
             
             return $userData;
+        } else {
+            logger()->debug('CrowdAuth Request FAILURE', [
+                'request-method'  => $request->getMethod(),
+                'request-uri'     => (string)$request->getUri(),
+                'request-headers' => $request->getHeaders(),
+                'request-body'    => (string)$request->getBody(),
+
+                'response-status'  => $response->getStatusCode(),
+                'response-reason'  => $response->getReasonPhrase(),
+                'response-headers' => $response->getHeaders(),
+                //'response-body'   => (string)$response->getBody(),
+            ]);
         }
         
         return null;
